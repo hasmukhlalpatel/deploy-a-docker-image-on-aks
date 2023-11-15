@@ -15,4 +15,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Samples.WebApis.Integration.Tests" />
+    <InternalsVisibleTo Include="Samples.WebApis.Tests" />
+  </ItemGroup>
 </Project>
