@@ -1,0 +1,89 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+    - main
+    - master
+    - releases/*
+    - feature/*
+    exclude:
+    - releases/old*
+
+pool:
+  vmImage: 'ubuntu-latest' # examples of other options:'ubuntu-18.04' , 'macOS-10.15', 'windows-2019'
+
+variables:
+  buildConfiguration: 'Release'
+  publishRID: 'linux-x64'
+  dotNetFramework: 'net7.0'
+  dotNetVersion: '7.0.x'
+  targetRuntime: 'linux-x64'
+  # see more at https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+#- task: DotNetCoreCLI@2
+#  displayName: Restore
+#  inputs:
+#    command: restore
+#    projects: '**/*.csproj'
+#    feedsToUse: config
+#    nugetConfigPath: nuget.config    # Relative to root of the repository
+#    #externalFeedCredentials: <Name of the NuGet service connection>
+
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '7.0.x'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore'
+  inputs:
+    command: 'restore'
+    projects: '**/*.sln'
+
+#- task: DotNetCoreCLI@2
+#  displayName: 'Restore'
+#  inputs:
+#    command: 'restore'
+#    projects: '**/*.sln'
+#    feedsToUse: 'select'
+#    vstsFeed: 'c3271974-81de-459b-937f-24dc0b3ad6b1'
+
+#You can run any custom dotnet command in your pipeline. The following example shows how to install and use a .NET global tool, dotnetsay: https://www.nuget.org/packages/dotnetsay/
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
+  inputs:
+    command: build
+    projects: '**/*.sln'
+    arguments: '--configuration $(buildConfiguration)'
+
+
+#Publish artifacts to Azure Pipelines
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: true
+    projects: 'src/**/*.csproj'
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory) -r $(publishRID) --self-contained true'
+    #arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory) -f netstandard2.1'
+    #zipAfterPublish: false
+    zipAfterPublish: True
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Build Artifacts'
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
+    artifactName: 'drop'
+  
